@@ -91,7 +91,7 @@ export default function TarefasPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Tarefas do Engenheiro</h1>
-        <Button onClick={() => setShowCreateModal(true)} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={() => setShowCreateModal(true)} className="bg-orange-600 hover:bg-orange-700">
           <Plus className="mr-2 h-4 w-4" /> Nova Tarefa
         </Button>
       </div>

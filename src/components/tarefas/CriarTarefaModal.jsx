@@ -72,7 +72,7 @@ export default function CriarTarefaModal({ isOpen, onClose, onSubmit, obras, tar
           </div>
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={onClose}><X className="mr-2 h-4 w-4" />Cancelar</Button>
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}><Save className="mr-2 h-4 w-4" />Salvar</Button>
+            <Button type="submit" className="bg-orange-600 hover:bg-orange-700" disabled={isSubmitting}><Save className="mr-2 h-4 w-4" />Salvar</Button>
           </DialogFooter>
         </form>
       </DialogContent>

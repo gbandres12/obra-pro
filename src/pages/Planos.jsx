@@ -23,10 +23,10 @@ export default function PlanosPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {plans.map((plan) => (
-                    <Card key={plan.id} className={`relative flex flex-col ${plan.recommended ? 'border-2 border-emerald-500 shadow-xl scale-105 z-10' : 'border border-gray-200'}`}>
+                    <Card key={plan.id} className={`relative flex flex-col ${plan.recommended ? 'border-2 border-orange-500 shadow-xl scale-105 z-10' : 'border border-gray-200'}`}>
                         {plan.recommended && (
                             <div className="absolute top-0 right-0 left-0 -mt-4 flex justify-center">
-                                <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1 text-sm uppercase tracking-wide">
+                                <Badge className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1 text-sm uppercase tracking-wide">
                                     Recomendado
                                 </Badge>
                             </div>
@@ -42,7 +42,7 @@ export default function PlanosPage() {
                             <ul className="space-y-4">
                                 {plan.features.map((feature, idx) => (
                                     <li key={idx} className="flex items-start">
-                                        <Check className="h-5 w-5 text-emerald-500 mr-2 flex-shrink-0" />
+                                        <Check className="h-5 w-5 text-orange-500 mr-2 flex-shrink-0" />
                                         <span className="text-gray-600">{feature}</span>
                                     </li>
                                 ))}
@@ -50,7 +50,7 @@ export default function PlanosPage() {
                         </CardContent>
                         <CardFooter className="pt-6">
                             <Button
-                                className={`w-full h-12 text-lg font-semibold ${plan.recommended ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
+                                className={`w-full h-12 text-lg font-semibold ${plan.recommended ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
                                 variant={plan.recommended ? 'default' : 'outline'}
                                 onClick={() => handleSubscribe(plan.id)}
                             >
