@@ -140,3 +140,19 @@ create policy "Enable all access for authenticated users" on public.diarias for 
 create policy "Enable all access for authenticated users" on public.lancamentos_financeiros for all using (auth.role() = 'authenticated');
 create policy "Enable all access for authenticated users" on public.tarefas_engenheiro for all using (auth.role() = 'authenticated');
 create policy "Enable all access for authenticated users" on public.solicitacoes for all using (auth.role() = 'authenticated');
+
+-- Documentos e Vencimentos
+create table public.documentos_obra (
+  id uuid default uuid_generate_v4() primary key,
+  obra_id uuid references public.obras(id) on delete cascade not null,
+  titulo text not null,
+  tipo text, -- alvara, licenca, contrato, seguro, outros
+  data_vencimento date,
+  status text default 'vigente', -- vigente, a_vencer, vencido
+  arquivo_url text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.documentos_obra enable row level security;
+create policy "Enable all access for authenticated users" on public.documentos_obra for all using (auth.role() = 'authenticated');
