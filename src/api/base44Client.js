@@ -1,4 +1,3 @@
-
 import { Obra } from '@/entities/Obra';
 import { Etapa } from '@/entities/Etapa';
 import { SolicitacaoMaterial } from '@/entities/SolicitacaoMaterial';
@@ -8,11 +7,28 @@ import { LancamentoFinanceiro } from '@/entities/LancamentoFinanceiro';
 import { TarefaEngenheiro } from '@/entities/TarefaEngenheiro';
 import { Solicitacao } from '@/entities/Solicitacao';
 
-// Mock implementation of base44 client for local development/SaaS transformation
-// TODO: Replace with a real API client (e.g. for Supabase, Firebase, or custom backend)
+import {
+  MockObra, MockEtapa, MockSolicitacaoMaterial, MockFuncionario,
+  MockDiaria, MockLancamentoFinanceiro, MockTarefaEngenheiro, MockSolicitacao
+} from '@/entities/mockImpl';
+
+// Check if we should use mock data
+// If env var is set OR if Supabase URL is the placeholder/missing
+const useMock = import.meta.env.VITE_USE_MOCK === 'true' ||
+  !import.meta.env.VITE_SUPABASE_URL ||
+  import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
 
 export const base44 = {
-  entities: {
+  entities: useMock ? {
+    Obra: MockObra,
+    Etapa: MockEtapa,
+    SolicitacaoMaterial: MockSolicitacaoMaterial,
+    Funcionario: MockFuncionario,
+    Diaria: MockDiaria,
+    LancamentoFinanceiro: MockLancamentoFinanceiro,
+    TarefaEngenheiro: MockTarefaEngenheiro,
+    Solicitacao: MockSolicitacao
+  } : {
     Obra,
     Etapa,
     SolicitacaoMaterial,
@@ -24,54 +40,34 @@ export const base44 = {
   },
   auth: {
     me: async () => {
-      // Mock user for development
-      return {
-        id: 'mock-user-id',
-        email: 'dev@engenheirodebolso.com',
-        name: 'Developer User',
-        role: 'admin'
-      };
+      // If mocking, return a fake user, else let AuthContext handle real auth
+      if (useMock) {
+        return {
+          id: 'mock-user-id',
+          email: 'teste@obrapro.com.br',
+          name: 'Usuário Teste',
+          role: 'admin'
+        };
+      }
+      return null;
     },
     logout: (redirectUrl) => {
-      console.log('Mock logout called', { redirectUrl });
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      }
+      if (redirectUrl) window.location.href = redirectUrl;
     },
-    redirectToLogin: (param) => {
-      console.log('Mock redirectToLogin called', { param });
-      // In a real app, this would redirect to the login page
-      // window.location.href = '/login'; 
-      alert('Redirect to Login (Mock)');
+    redirectToLogin: () => {
+      // No-op for mock
+      console.log('Redirect to login requested');
     }
   },
   appLogs: {
     logUserInApp: async (pageName) => {
-      console.log(`Mock logUserInApp: ${pageName}`);
+      console.log(`Log: User on ${pageName}`);
       return { success: true };
     }
   }
 };
 
-// Mock createAxiosClient to support AuthContext usage
-export const createAxiosClient = ({ baseURL, headers, token, interceptResponses }) => {
-  return {
-    get: async (url) => {
-      console.log(`Mock GET request to ${baseURL}${url}`);
-      if (url.includes('public-settings')) {
-        return {
-          id: 'mock-app-id',
-          public_settings: {
-            theme: 'light',
-            appName: 'Engenheiro de Bolso SaaS'
-          }
-        };
-      }
-      return {};
-    },
-    post: async (url, data) => {
-      console.log(`Mock POST request to ${baseURL}${url}`, data);
-      return {};
-    }
-  }
-};
+export const createAxiosClient = () => ({
+  get: async () => ({}),
+  post: async () => ({})
+});

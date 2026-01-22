@@ -25,8 +25,8 @@ const FinanceiroObraCard = ({ obra, lancamentos }) => {
     .filter(l => l.obra_id === obra.id && l.tipo === 'despesa')
     .reduce((sum, l) => sum + l.valor, 0);
 
-  const percentualGasto = obra.valor_total_contrato > 0 
-    ? (despesas / obra.valor_total_contrato) * 100 
+  const percentualGasto = obra.valor_total_contrato > 0
+    ? (despesas / obra.valor_total_contrato) * 100
     : 0;
 
   const saldo = obra.valor_total_contrato - despesas;
@@ -43,14 +43,16 @@ const FinanceiroObraCard = ({ obra, lancamentos }) => {
       color: 'bg-amber-100 text-amber-800 border-amber-200',
     };
   }
-  
+
   return (
     <Card className="hover:shadow-lg transition-all duration-300">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg font-bold text-gray-900">{obra.nome}</CardTitle>
-            <p className="text-sm text-gray-500 mt-1">Centro de Custo: {obra.centro_de_custo}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Valor Contrato: <span className="font-medium text-emerald-600">R$ {obra.valor_total_contrato?.toLocaleString('pt-BR')}</span>
+            </p>
           </div>
           {alert && (
             <Badge className={alert.color}>
@@ -132,7 +134,7 @@ export default function FinanceiroPage() {
     }
   };
 
-  const filteredLancamentos = lancamentos.filter(l => 
+  const filteredLancamentos = lancamentos.filter(l =>
     obraFilter === 'all' || l.obra_id === obraFilter
   );
 

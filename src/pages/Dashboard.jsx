@@ -21,21 +21,82 @@ import { ptBR } from 'date-fns/locale';
 const StatusCard = ({ title, value, icon: Icon, color, trend, onClick }) => (
   <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer" onClick={onClick}>
     <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-          {trend && (
-            <div className="flex items-center mt-2 text-sm">
-              <TrendingUp className="w-4 h-4 mr-1 text-emerald-500" />
-              <span className="text-emerald-600 font-medium">{trend}</span>
-            </div>
-          )}
-        </div>
-        <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center`}>
+      <div className="flex flex-col items-center text-center">
+        <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-4 shadow-sm`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
+        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+        {trend && (
+          <div className="flex items-center mt-2 text-sm justify-center">
+            <TrendingUp className="w-4 h-4 mr-1 text-emerald-500" />
+            <span className="text-emerald-600 font-medium">{trend}</span>
+          </div>
+        )}
       </div>
+    </CardContent>
+  </Card>
+);
+
+const WeatherWidget = () => (
+  <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white overflow-hidden relative">
+    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-10 -mt-10" />
+    <CardContent className="p-6 relative z-10">
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="font-medium text-blue-100">Local da Obra</p>
+          <h3 className="text-2xl font-bold mt-1">São Paulo, SP</h3>
+          <div className="flex items-center mt-4 gap-4">
+            <span className="text-4xl font-bold">28°</span>
+            <div className="text-sm text-blue-100">
+              <p>Parcialmente</p>
+              <p>Nublado</p>
+            </div>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-sm text-blue-100">Umidade: 65%</p>
+          <p className="text-sm text-blue-100 mt-1">Vento: 12km/h</p>
+        </div>
+      </div>
+      <div className="mt-6 flex gap-4 text-sm text-blue-100 border-t border-white/20 pt-4">
+        <div className="flex-1 text-center">
+          <p>08:00</p>
+          <p className="font-bold my-1">24°</p>
+        </div>
+        <div className="flex-1 text-center border-l border-white/20">
+          <p>12:00</p>
+          <p className="font-bold my-1">30°</p>
+        </div>
+        <div className="flex-1 text-center border-l border-white/20">
+          <p>16:00</p>
+          <p className="font-bold my-1">29°</p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const ExpirationsWidget = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-base font-semibold text-gray-900">Próximos Vencimentos</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {[1, 2, 3].map((_, i) => (
+        <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">Alvará de Construção #292</p>
+            <p className="text-xs text-gray-500">Vence em 5 dias</p>
+          </div>
+          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
+            Ver
+          </Button>
+        </div>
+      ))}
     </CardContent>
   </Card>
 );
@@ -44,7 +105,7 @@ const ObraCard = ({ obra, etapas = [], materiais = [] }) => {
   const etapasObra = etapas.filter(e => e.obra_id === obra.id);
   const materiaisObra = materiais.filter(m => m.obra_id === obra.id);
   const materiaisPendentes = materiaisObra.filter(m => m.status === 'pendente').length;
-  
+
   const getStatusColor = (situacao) => {
     switch (situacao) {
       case 'ativa': return 'bg-emerald-100 text-emerald-800';
@@ -83,8 +144,10 @@ const ObraCard = ({ obra, etapas = [], materiais = [] }) => {
               <p className="text-sm font-medium">{obra.area_construida}m²</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Tipo</p>
-              <p className="text-sm font-medium capitalize">{obra.tipo_obra}</p>
+              <p className="text-xs text-gray-500">Contrato</p>
+              <p className="text-sm font-medium text-emerald-600">
+                R$ {obra.valor_total_contrato ? obra.valor_total_contrato.toLocaleString('pt-BR') : '0,00'}
+              </p>
             </div>
           </div>
 
@@ -125,11 +188,9 @@ export default function Dashboard() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Carregar apenas obras primeiro
       const obrasData = await base44.entities.Obra.list('-created_date', 50);
       setObras(obrasData);
-      
-      // Carregar outros dados em sequência para evitar timeout
+
       const obrasAtivas = obrasData.filter(o => o.situacao === 'ativa');
       if (obrasAtivas.length > 0) {
         const [etapasData, materiaisData, diariasData] = await Promise.all([
@@ -137,14 +198,13 @@ export default function Dashboard() {
           base44.entities.SolicitacaoMaterial.filter({ status: 'pendente' }, '-created_date', 50),
           base44.entities.Diaria.list('-data_trabalho', 100)
         ]);
-        
+
         setEtapas(etapasData);
         setMateriais(materiaisData);
         setDiarias(diariasData);
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
-      // Definir estados vazios em caso de erro
       setObras([]);
       setEtapas([]);
       setMateriais([]);
@@ -157,7 +217,6 @@ export default function Dashboard() {
   const materiaisPendentes = materiais.filter(m => m.status === 'pendente');
   const etapasPendentes = etapas.filter(e => e.status !== 'concluida');
 
-  // Calcular diárias da semana
   const inicioSemana = startOfWeek(new Date(), { locale: ptBR });
   const fimSemana = endOfWeek(new Date(), { locale: ptBR });
   const diariasSemanais = diarias.filter(d => {
@@ -215,57 +274,43 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Obras em Andamento */}
-      <div>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Obras em Andamento</h2>
-          <Link to={createPageUrl('Obras')}>
-            <Button variant="outline" size="sm">
-              Ver Todas
-            </Button>
-          </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content: Obras list */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-900">Obras em Andamento</h2>
+            <Link to={createPageUrl('Obras')}>
+              <Button variant="outline" size="sm">Ver Todas</Button>
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2].map(i => <Card key={i} className="animate-pulse h-48" />)}
+            </div>
+          ) : obrasAtivas.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {obrasAtivas.slice(0, 4).map(obra => (
+                <ObraCard
+                  key={obra.id}
+                  obra={obra}
+                  etapas={etapas}
+                  materiais={materiais}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card className="p-12 text-center">
+              <p>Nenhuma obra ativa.</p>
+            </Card>
+          )}
         </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-6"></div>
-                  <div className="h-2 bg-gray-200 rounded mb-4"></div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="h-3 bg-gray-200 rounded"></div>
-                    <div className="h-3 bg-gray-200 rounded"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : obrasAtivas.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {obrasAtivas.slice(0, 6).map(obra => (
-              <ObraCard 
-                key={obra.id} 
-                obra={obra} 
-                etapas={etapas}
-                materiais={materiais}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card className="p-12 text-center">
-            <Building2 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma obra ativa</h3>
-            <p className="text-gray-600 mb-6">Comece criando sua primeira obra</p>
-            <Link to={createPageUrl('Obras')}>
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Primeira Obra
-              </Button>
-            </Link>
-          </Card>
-        )}
+        {/* Sidebar Widgets: Weather & Expirations */}
+        <div className="space-y-6">
+          <WeatherWidget />
+          <ExpirationsWidget />
+        </div>
       </div>
     </div>
   );
