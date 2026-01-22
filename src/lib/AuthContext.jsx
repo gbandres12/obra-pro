@@ -94,9 +94,11 @@ export const AuthProvider = ({ children }) => {
       user,
       isAuthenticated,
       isLoadingAuth,
+      isLoadingPublicSettings: false, // Default to false as we don't have this logic yet
       authError,
       login,
-      logout
+      logout,
+      navigateToLogin: () => window.location.href = '/login' // Simple redirect
     }}>
       {children}
     </AuthContext.Provider>
