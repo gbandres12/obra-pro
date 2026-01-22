@@ -1,5 +1,6 @@
 import Dashboard from './pages/Dashboard';
 import Obras from './pages/Obras';
+import Planos from './pages/Planos';
 import Etapas from './pages/Etapas';
 import Equipe from './pages/Equipe';
 import Financeiro from './pages/Financeiro';
@@ -19,6 +20,7 @@ export const PAGES = {
     "Tarefas": Tarefas,
     "Solicitacoes": Solicitacoes,
     "Materiais": Materiais,
+    "Planos": Planos,
     "ObraDashboard": ObraDashboard,
 }
 
