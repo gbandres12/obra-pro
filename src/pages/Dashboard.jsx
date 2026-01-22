@@ -162,7 +162,7 @@ const ObraCard = ({ obra, etapas = [], materiais = [] }) => {
 
           <div className="flex gap-2 pt-2">
             <Link to={createPageUrl(`ObraDashboard?id=${obra.id}`)} className="w-full">
-              <Button variant="default" size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700">
+              <Button variant="default" size="sm" className="w-full bg-orange-600 hover:bg-orange-700">
                 <Building2 className="w-4 h-4 mr-2" />
                 Ver Detalhes
               </Button>
@@ -234,7 +234,7 @@ export default function Dashboard() {
           <p className="text-gray-600 mt-1">Visão geral das suas obras</p>
         </div>
         <Link to={createPageUrl('Obras')}>
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
+          <Button className="bg-orange-600 hover:bg-orange-700">
             <Plus className="w-4 h-4 mr-2" />
             Nova Obra
           </Button>
@@ -247,7 +247,7 @@ export default function Dashboard() {
           title="Obras Ativas"
           value={obrasAtivas.length}
           icon={Building2}
-          color="bg-emerald-500"
+          color="bg-orange-500"
           trend="+2 este mês"
           onClick={() => window.location.href = createPageUrl('Obras')}
         />

@@ -40,11 +40,11 @@ const ObraCard = ({ obra }) => {
 
   return (
     <Link to={createPageUrl(`ObraDashboard?id=${obra.id}`)}>
-      <Card className="hover:shadow-lg hover:border-emerald-400 transition-all duration-300 group">
+      <Card className="hover:shadow-lg hover:border-orange-400 transition-all duration-300 group">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">
+              <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
                 {obra.nome}
               </CardTitle>
               <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
@@ -68,20 +68,20 @@ const ObraCard = ({ obra }) => {
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-               <div className="flex items-center gap-2">
-                 <Ruler className="w-4 h-4 text-gray-400" />
-                 <div>
-                   <p className="text-xs text-gray-500">Área</p>
-                   <p className="text-sm font-medium">{obra.area_construida}m²</p>
-                 </div>
-               </div>
-               <div>
-                 <p className="text-xs text-gray-500 mb-1">Tipo</p>
-                 <Badge variant="outline" className={getTipoColor(obra.tipo_obra)}>
-                   {obra.tipo_obra}
-                 </Badge>
-               </div>
-             </div>
+              <div className="flex items-center gap-2">
+                <Ruler className="w-4 h-4 text-gray-400" />
+                <div>
+                  <p className="text-xs text-gray-500">Área</p>
+                  <p className="text-sm font-medium">{obra.area_construida}m²</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Tipo</p>
+                <Badge variant="outline" className={getTipoColor(obra.tipo_obra)}>
+                  {obra.tipo_obra}
+                </Badge>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -122,7 +122,7 @@ export default function ObrasPage() {
     }
     setIsLoading(false);
   };
-  
+
   const applyFilters = () => {
     let filtered = obras;
 
@@ -188,7 +188,7 @@ export default function ObrasPage() {
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-orange-600 hover:bg-orange-700"
         >
           <Plus className="w-4 h-4 mr-2" />
           Nova Obra
@@ -283,8 +283,8 @@ export default function ObrasPage() {
             <Card className="p-12 text-center">
               <Building2 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {searchTerm || filterTipo !== 'all' 
-                  ? 'Nenhuma obra encontrada' 
+                {searchTerm || filterTipo !== 'all'
+                  ? 'Nenhuma obra encontrada'
                   : 'Nenhuma obra encontrada'
                 }
               </h3>
@@ -297,7 +297,7 @@ export default function ObrasPage() {
               {(!searchTerm && filterTipo === 'all') && (
                 <Button
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  className="bg-orange-600 hover:bg-orange-700"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Criar Primeira Obra

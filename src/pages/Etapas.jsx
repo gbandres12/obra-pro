@@ -291,7 +291,7 @@ export default function EtapasPage() {
           </Button>
           <Button
             onClick={() => setShowCreateModal(true)}
-            className="bg-emerald-600 hover:bg-emerald-700"
+            className="bg-orange-600 hover:bg-orange-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Nova Etapa
@@ -382,7 +382,7 @@ export default function EtapasPage() {
             {(!searchTerm && selectedObra === 'all' && filterStatus === 'all') && (
               <Button
                 onClick={() => setShowCreateModal(true)}
-                className="bg-emerald-600 hover:bg-emerald-700"
+                className="bg-orange-600 hover:bg-orange-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Criar Primeira Etapa

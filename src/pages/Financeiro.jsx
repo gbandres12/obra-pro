@@ -148,7 +148,7 @@ export default function FinanceiroPage() {
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-orange-600 hover:bg-orange-700"
         >
           <Plus className="w-4 h-4 mr-2" />
           Novo Lançamento

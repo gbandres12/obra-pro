@@ -10,6 +10,8 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
 
+  const [userSubscription, setUserSubscription] = useState({ plano: 'free', status: 'inactive' });
+
   useEffect(() => {
     // Check active sessions and subscribe to auth changes
     const checkSession = async () => {
@@ -20,6 +22,7 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           setUser(session.user);
           setIsAuthenticated(true);
+          await fetchUserSubscription(session.user.id);
         }
       } catch (error) {
         console.error('Error checking session:', error);
@@ -30,19 +33,45 @@ export const AuthProvider = ({ children }) => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser(session.user);
         setIsAuthenticated(true);
+        await fetchUserSubscription(session.user.id);
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        setUserSubscription({ plano: 'free', status: 'inactive' });
       }
       setIsLoadingAuth(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserSubscription = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        // If profile doesn't exist yet (PGRST116), or other error, fallback to free
+        console.log('Subscription fetch note:', error.message);
+        setUserSubscription({ plano: 'free', status: 'inactive' });
+      } else if (data) {
+        setUserSubscription({
+          plano: data.plan_tier || 'free',
+          status: data.subscription_status || 'inactive'
+        });
+      }
+    } catch (err) {
+      console.error('Error in fetchUserSubscription:', err);
+      setUserSubscription({ plano: 'free', status: 'inactive' });
+    }
+  };
 
   const login = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({

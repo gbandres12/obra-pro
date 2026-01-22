@@ -337,7 +337,7 @@ export default function CriarObraModal({ isOpen, onClose, onSubmit, obra, isEdit
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-orange-600 hover:bg-orange-700"
             >
               <Save className="w-4 h-4 mr-2" />
               {isSubmitting ? 'Salvando...' : (isEditing ? 'Salvar Alterações' : 'Criar Obra')}

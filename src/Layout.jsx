@@ -132,7 +132,7 @@ function SidebarContent({ location, setSidebarOpen, isDesktop = false }) {
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -161,12 +161,12 @@ function SidebarContent({ location, setSidebarOpen, isDesktop = false }) {
               to={item.url}
               onClick={() => setSidebarOpen(false)}
               className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${isActive
-                  ? 'bg-emerald-50 text-emerald-700 shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                ? 'bg-orange-50 text-orange-700 shadow-sm'
+                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                 }`}
             >
               <item.icon
-                className={`mr-3 flex-shrink-0 h-5 w-5 transition-colors ${isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500'
+                className={`mr-3 flex-shrink-0 h-5 w-5 transition-colors ${isActive ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-500'
                   }`}
               />
               {item.title}
