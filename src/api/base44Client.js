@@ -4,6 +4,9 @@ import { Etapa } from '@/entities/Etapa';
 import { SolicitacaoMaterial } from '@/entities/SolicitacaoMaterial';
 import { Funcionario } from '@/entities/Funcionario';
 import { Diaria } from '@/entities/Diaria';
+import { LancamentoFinanceiro } from '@/entities/LancamentoFinanceiro';
+import { TarefaEngenheiro } from '@/entities/TarefaEngenheiro';
+import { Solicitacao } from '@/entities/Solicitacao';
 
 // Mock implementation of base44 client for local development/SaaS transformation
 // TODO: Replace with a real API client (e.g. for Supabase, Firebase, or custom backend)
@@ -14,7 +17,10 @@ export const base44 = {
     Etapa,
     SolicitacaoMaterial,
     Funcionario,
-    Diaria
+    Diaria,
+    LancamentoFinanceiro,
+    TarefaEngenheiro,
+    Solicitacao
   },
   auth: {
     me: async () => {

@@ -11,6 +11,8 @@ create table public.obras (
   area_construida numeric,
   situacao text default 'ativa', -- ativa, finalizada, arquivada
   progresso_geral numeric default 0,
+  valor_total_contrato numeric,
+  centro_de_custo text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -21,7 +23,7 @@ create table public.etapas (
   obra_id uuid references public.obras(id) on delete cascade not null,
   nome_etapa text not null,
   descricao text,
-  status text default 'pendente', -- pendente, em_andamento, concluida, atrasada
+  status text default 'pendente',
   progresso numeric default 0,
   data_inicio_prevista date,
   data_fim_prevista date,
@@ -33,7 +35,7 @@ create table public.etapas (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Solicitacoes de Material Table
+-- Solicitacoes de Material Table (Legacy named solicitacoes_materiais)
 create table public.solicitacoes_materiais (
   id uuid default uuid_generate_v4() primary key,
   obra_id uuid references public.obras(id) on delete cascade not null,
@@ -41,8 +43,8 @@ create table public.solicitacoes_materiais (
   quantidade numeric not null,
   unidade text,
   solicitante text,
-  status text default 'pendente', -- pendente, aprovado, comprado, entregue, cancelado
-  urgencia text default 'media', -- baixa, media, alta, urgente
+  status text default 'pendente',
+  urgencia text default 'media',
   data_necessaria date,
   data_entrega_real date,
   valor_estimado numeric,
@@ -58,9 +60,9 @@ create table public.funcionarios (
   funcao text,
   telefone text,
   email text,
-  status text default 'ativo', -- ativo, inativo, afastado
+  status text default 'ativo',
   valor_diaria numeric default 0,
-  especialidades text[], -- Array of strings
+  especialidades text[],
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -72,25 +74,69 @@ create table public.diarias (
   obra_id uuid references public.obras(id) on delete set null,
   data_trabalho date not null,
   valor_pago numeric default 0,
-  status text default 'pendente', -- pendente, pague
+  status text default 'pendente',
   observacoes text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security (RLS)
+-- Lancamentos Financeiros Table
+create table public.lancamentos_financeiros (
+  id uuid default uuid_generate_v4() primary key,
+  obra_id uuid references public.obras(id) on delete cascade not null,
+  descricao text not null,
+  tipo text not null, -- despesa, receita
+  valor numeric default 0,
+  data_lancamento date not null,
+  categoria text,
+  status text default 'confirmado',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Tarefas Engenheiro Table
+create table public.tarefas_engenheiro (
+  id uuid default uuid_generate_v4() primary key,
+  obra_id uuid references public.obras(id) on delete cascade,
+  titulo text not null,
+  descricao text,
+  data_hora timestamp with time zone not null,
+  status text default 'pendente', -- pendente, concluida
+  prioridade text default 'media',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Solicitacoes Gerais Table (SolicitacoesPage)
+create table public.solicitacoes (
+  id uuid default uuid_generate_v4() primary key,
+  obra_id uuid references public.obras(id) on delete cascade not null,
+  tipo_solicitacao text not null,
+  descricao text,
+  solicitante text,
+  setor text, -- engenharia, financeiro, administrativo
+  status text default 'aberta', -- aberta, em_analise, concluida, cancelada
+  data_solicitacao timestamp with time zone default now(),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
 alter table public.obras enable row level security;
 alter table public.etapas enable row level security;
 alter table public.solicitacoes_materiais enable row level security;
 alter table public.funcionarios enable row level security;
 alter table public.diarias enable row level security;
+alter table public.lancamentos_financeiros enable row level security;
+alter table public.tarefas_engenheiro enable row level security;
+alter table public.solicitacoes enable row level security;
 
--- Create policies (For simplicity in this initial version, we allow public access if authenticated, 
--- but in a real SaaS you would check for user_id ownership)
--- You typically need a middleware or 'profiles' table to link auth.users to data.
--- For now, we will create a policy that allows any authenticated user to do anything.
+-- Policies
 create policy "Enable all access for authenticated users" on public.obras for all using (auth.role() = 'authenticated');
 create policy "Enable all access for authenticated users" on public.etapas for all using (auth.role() = 'authenticated');
 create policy "Enable all access for authenticated users" on public.solicitacoes_materiais for all using (auth.role() = 'authenticated');
 create policy "Enable all access for authenticated users" on public.funcionarios for all using (auth.role() = 'authenticated');
 create policy "Enable all access for authenticated users" on public.diarias for all using (auth.role() = 'authenticated');
+create policy "Enable all access for authenticated users" on public.lancamentos_financeiros for all using (auth.role() = 'authenticated');
+create policy "Enable all access for authenticated users" on public.tarefas_engenheiro for all using (auth.role() = 'authenticated');
+create policy "Enable all access for authenticated users" on public.solicitacoes for all using (auth.role() = 'authenticated');
