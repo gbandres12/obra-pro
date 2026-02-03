@@ -155,16 +155,35 @@ export const MockTarefaEngenheiro = {
 };
 
 export const MockSolicitacao = {
+    list: async () => [
+        { id: '1', obra_id: '1', tipo_solicitacao: 'Contratação', descricao: 'Precisamos de mais 2 serventes', solicitante: 'Carlos', setor: 'RH', status: 'aberta' }
     ],
-get: async (id) => {
-    const list = await MockSolicitacao.list();
-    return list.find(s => s.id === id) || list[0];
-},
+    get: async (id) => {
+        const list = await MockSolicitacao.list();
+        return list.find(s => s.id === id) || list[0];
+    },
     filter: async (criteria = {}) => {
         const list = await MockSolicitacao.list();
         return list.filter(s => Object.entries(criteria).every(([k, v]) => s[k] === v));
     },
-        create: async (data) => ({ id: Math.random().toString(), ...data }),
-            update: async (id, data) => ({ id, ...data }),
-                delete: async () => ({ success: true })
+    create: async (data) => ({ id: Math.random().toString(), ...data }),
+    update: async (id, data) => ({ id, ...data }),
+    delete: async () => ({ success: true })
+};
+
+export const MockFotoProgresso = {
+    list: async () => [
+        { id: '1', obra_id: '1', url: 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?w=800&q=80', descricao: 'Início da Alvenaria', data_foto: new Date().toISOString() },
+        { id: '2', obra_id: '1', url: 'https://images.unsplash.com/photo-1503387762-592dea58ef21?w=800&q=80', descricao: 'Vigamento concluído', data_foto: new Date().toISOString() }
+    ],
+    get: async (id) => {
+        const list = await MockFotoProgresso.list();
+        return list.find(f => f.id === id) || list[0];
+    },
+    filter: async (criteria = {}) => {
+        const list = await MockFotoProgresso.list();
+        return list.filter(f => Object.entries(criteria).every(([k, v]) => f[k] === v));
+    },
+    create: async (data) => ({ id: Math.random().toString(), ...data }),
+    delete: async () => ({ success: true })
 };

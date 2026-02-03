@@ -190,3 +190,17 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Fotos de Progresso
+create table public.fotos_progresso (
+  id uuid default gen_random_uuid() primary key,
+  obra_id uuid references public.obras(id) on delete cascade not null,
+  etapa_id uuid references public.etapas(id) on delete set null,
+  url text not null,
+  descricao text,
+  data_foto date default current_date,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.fotos_progresso enable row level security;
+create policy "Enable all access for authenticated users" on public.fotos_progresso for all using (auth.role() = 'authenticated');

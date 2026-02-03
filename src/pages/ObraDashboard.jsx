@@ -15,15 +15,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  DollarSign, 
-  User, 
-  Package, 
-  AlertCircle, 
+import {
+  DollarSign,
+  User,
+  Package,
+  AlertCircle,
   TrendingUp,
   Plus,
   ArrowLeft,
-  Clock
+  Clock,
+  Camera,
+  Image as ImageIcon,
+  Trash2
 } from 'lucide-react';
 import { format, differenceInDays, formatDistanceToNowStrict } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -53,9 +56,12 @@ export default function ObraDashboard() {
   const [diarias, setDiarias] = useState([]);
   const [funcionarios, setFuncionarios] = useState([]);
   const [solicitacoes, setSolicitacoes] = useState([]);
+  const [fotos, setFotos] = useState([]);
   const [encarregado, setEncarregado] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showEtapaModal, setShowEtapaModal] = useState(false);
+  const [showFotoModal, setShowFotoModal] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [editingEtapa, setEditingEtapa] = useState(null);
 
   useEffect(() => {
@@ -81,6 +87,7 @@ export default function ObraDashboard() {
         base44.entities.Diaria.filter({ obra_id: id }, '-data_trabalho'),
         base44.entities.Funcionario.list(),
         base44.entities.SolicitacaoMaterial.filter({ obra_id: id }, '-data_solicitacao'),
+        base44.entities.FotoProgresso.filter({ obra_id: id }, '-created_at'),
       ]);
 
       setObra(obraData);
@@ -89,6 +96,8 @@ export default function ObraDashboard() {
       setDiarias(diariasData);
       setFuncionarios(funcionariosData);
       setSolicitacoes(solicitacoesData);
+
+      setFotos(fotosData);
 
       if (obraData.encarregado_id) {
         const encarregadoData = await base44.entities.Funcionario.get(obraData.encarregado_id);
@@ -99,7 +108,7 @@ export default function ObraDashboard() {
     }
     setIsLoading(false);
   };
-  
+
   const handleSaveEtapa = async (etapaData) => {
     try {
       if (editingEtapa) {
@@ -136,22 +145,55 @@ export default function ObraDashboard() {
   const totalGasto = lancamentos.filter(l => l.tipo === 'despesa').reduce((sum, l) => sum + l.valor, 0);
   const percentualGasto = obra.valor_total_contrato > 0 ? (totalGasto / obra.valor_total_contrato) * 100 : 0;
   const saldo = obra.valor_total_contrato - totalGasto;
-  
+
   const etapasConcluidas = etapas.filter(e => e.status === 'concluida').length;
   const progressoEtapas = etapas.length > 0 ? (etapasConcluidas / etapas.length) * 100 : 0;
-  
+
   const custoMaoDeObra = diarias.reduce((sum, d) => sum + (d.valor_pago || 0), 0);
   const solicitacoesPendentes = solicitacoes.filter(s => s.status === 'pendente' || s.status === 'aprovado').length;
+
+  const handleUploadFoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      // For now, since we don't have a real storage implementation, 
+      // we'll use a placeholder URL and simulate the creation.
+      // In a real scenario, we would use supabase.storage.from('obras').upload(...)
+      const placeholderUrl = `https://images.unsplash.com/photo-1541888946425-d81bb19480c5?w=800&q=80`;
+
+      await base44.entities.FotoProgresso.create({
+        obra_id: obraId,
+        url: placeholderUrl,
+        descricao: 'Foto adicionada via dashboard',
+        data_foto: new Date().toISOString().split('T')[0]
+      });
+
+      loadData(obraId);
+    } catch (error) {
+      console.error("Erro ao fazer upload da foto:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteFoto = async (id) => {
+    if (confirm('Deseja realmente excluir esta foto?')) {
+      await base44.entities.FotoProgresso.delete(id);
+      loadData(obraId);
+    }
+  };
 
   const getTempoRestante = () => {
     if (!obra.previsao_termino) return 'N/A';
     const dataTermino = new Date(obra.previsao_termino);
     const hoje = new Date();
-    
+
     // Ajustar para o final do dia para incluir o dia atual
     hoje.setHours(0, 0, 0, 0);
     dataTermino.setHours(23, 59, 59, 999);
-    
+
     const dias = differenceInDays(dataTermino, hoje);
 
     if (dias < 0) {
@@ -230,7 +272,7 @@ export default function ObraDashboard() {
               <span className="text-gray-600">Etapas concluídas: {etapasConcluidas} de {etapas.length}</span>
             </div>
             <Progress value={progressoEtapas} className="h-3" />
-             <div className="flex justify-between text-xs mt-1 text-gray-500">
+            <div className="flex justify-between text-xs mt-1 text-gray-500">
               <span>0%</span>
               <span>{progressoEtapas.toFixed(1)}%</span>
               <span>100%</span>
@@ -247,6 +289,7 @@ export default function ObraDashboard() {
           <TabsTrigger value="etapas">Etapas</TabsTrigger>
           <TabsTrigger value="materiais">Materiais</TabsTrigger>
           <TabsTrigger value="equipe">Equipe</TabsTrigger>
+          <TabsTrigger value="galeria">Galeria</TabsTrigger>
         </TabsList>
         <TabsContent value="financeiro">
           <Card>
@@ -282,27 +325,27 @@ export default function ObraDashboard() {
           </Card>
         </TabsContent>
         <TabsContent value="etapas">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Andamento das Etapas</CardTitle>
-                    <Button size="sm" onClick={() => setShowEtapaModal(true)}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nova Etapa
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <TimelineEtapas
-                        etapas={etapas}
-                        obras={[obra]} 
-                        isLoading={isLoading}
-                        onEdit={(etapa) => {
-                            setEditingEtapa(etapa);
-                            setShowEtapaModal(true);
-                        }}
-                        onUpdateStatus={handleUpdateStatusEtapa}
-                    />
-                </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Andamento das Etapas</CardTitle>
+              <Button size="sm" onClick={() => setShowEtapaModal(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Etapa
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <TimelineEtapas
+                etapas={etapas}
+                obras={[obra]}
+                isLoading={isLoading}
+                onEdit={(etapa) => {
+                  setEditingEtapa(etapa);
+                  setShowEtapaModal(true);
+                }}
+                onUpdateStatus={handleUpdateStatusEtapa}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="materiais">
           <Card>
@@ -395,8 +438,62 @@ export default function ObraDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="galeria">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Galeria de Progresso</CardTitle>
+                <p className="text-sm text-gray-500">Acompanhamento visual da evolução da obra</p>
+              </div>
+              <div className="flex gap-2">
+                <label className="cursor-pointer">
+                  <Button variant="outline" asChild disabled={isUploading}>
+                    <div>
+                      {isUploading ? 'Enviando...' : <><Camera className="w-4 h-4 mr-2" /> Adicionar Foto</>}
+                    </div>
+                  </Button>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUploadFoto} disabled={isUploading} />
+                </label>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {fotos.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {fotos.map(foto => (
+                    <div key={foto.id} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-200">
+                      <img
+                        src={foto.url}
+                        alt={foto.descricao}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                        <p className="text-white text-xs font-semibold mb-1 truncate">{foto.descricao}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/80 text-[10px]">{format(new Date(foto.data_foto), 'dd/MM/yyyy')}</span>
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="h-7 w-7"
+                            onClick={() => handleDeleteFoto(foto.id)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-xl">
+                  <ImageIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">Nenhuma foto registrada nesta obra.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
-      
+
       <CriarEtapaModal
         isOpen={showEtapaModal}
         onClose={() => {

@@ -6,10 +6,12 @@ import { Diaria } from '@/entities/Diaria';
 import { LancamentoFinanceiro } from '@/entities/LancamentoFinanceiro';
 import { TarefaEngenheiro } from '@/entities/TarefaEngenheiro';
 import { Solicitacao } from '@/entities/Solicitacao';
+import { FotoProgresso } from '@/entities/FotoProgresso';
 
 import {
   MockObra, MockEtapa, MockSolicitacaoMaterial, MockFuncionario,
-  MockDiaria, MockLancamentoFinanceiro, MockTarefaEngenheiro, MockSolicitacao
+  MockDiaria, MockLancamentoFinanceiro, MockTarefaEngenheiro, MockSolicitacao,
+  MockFotoProgresso
 } from '@/entities/mockImpl';
 
 // Check if we should use mock data
@@ -27,7 +29,8 @@ export const base44 = {
     Diaria: MockDiaria,
     LancamentoFinanceiro: MockLancamentoFinanceiro,
     TarefaEngenheiro: MockTarefaEngenheiro,
-    Solicitacao: MockSolicitacao
+    Solicitacao: MockSolicitacao,
+    FotoProgresso: MockFotoProgresso
   } : {
     Obra,
     Etapa,
@@ -36,7 +39,8 @@ export const base44 = {
     Diaria,
     LancamentoFinanceiro,
     TarefaEngenheiro,
-    Solicitacao
+    Solicitacao,
+    FotoProgresso
   },
   auth: {
     me: async () => {
