@@ -167,6 +167,7 @@ create table public.profiles (
   stripe_subscription_id text,
   subscription_status text default 'inactive', -- active, trialing, past_due, canceled, inactive
   plan_tier text default 'free', -- free, pro, enterprise
+  role text default 'user', -- user, admin, master
   current_period_end timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
@@ -189,4 +190,3 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
-
