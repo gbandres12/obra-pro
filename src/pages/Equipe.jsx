@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Funcionario } from '@/entities/Funcionario';
-import { Diaria } from '@/entities/Diaria';
-import { Obra } from '@/entities/Obra';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,12 +34,12 @@ const FuncionarioCard = ({ funcionario, diarias = [], onEdit, onRegistrarDiaria 
   // Calcular diárias do mês atual
   const inicioMes = startOfMonth(new Date());
   const fimMes = endOfMonth(new Date());
-  
+
   const diariasDoMes = diarias.filter(d => {
     const dataTrabalho = new Date(d.data_trabalho);
-    return d.funcionario_id === funcionario.id && 
-           dataTrabalho >= inicioMes && 
-           dataTrabalho <= fimMes;
+    return d.funcionario_id === funcionario.id &&
+      dataTrabalho >= inicioMes &&
+      dataTrabalho <= fimMes;
   });
 
   const diasTrabalhados = diariasDoMes.length;
@@ -171,11 +169,11 @@ export default function EquipePage() {
     setIsLoading(true);
     try {
       const [funcionariosData, diariasData, obrasData] = await Promise.all([
-        Funcionario.list('-created_date'),
-        Diaria.list('-data_trabalho'),
-        Obra.list('-created_date')
+        base44.entities.Funcionario.list('-created_date'),
+        base44.entities.Diaria.list('-data_trabalho'),
+        base44.entities.Obra.list('-created_date')
       ]);
-      
+
       setFuncionarios(funcionariosData);
       setDiarias(diariasData);
       setObras(obrasData);
@@ -206,7 +204,7 @@ export default function EquipePage() {
 
   const handleCreateFuncionario = async (funcionarioData) => {
     try {
-      await Funcionario.create(funcionarioData);
+      await base44.entities.Funcionario.create(funcionarioData);
       setShowCreateModal(false);
       loadData();
     } catch (error) {
@@ -216,7 +214,7 @@ export default function EquipePage() {
 
   const handleEditFuncionario = async (funcionarioData) => {
     try {
-      await Funcionario.update(editingFuncionario.id, funcionarioData);
+      await base44.entities.Funcionario.update(editingFuncionario.id, funcionarioData);
       setEditingFuncionario(null);
       loadData();
     } catch (error) {
@@ -226,7 +224,7 @@ export default function EquipePage() {
 
   const handleRegistrarDiaria = async (diariaData) => {
     try {
-      await Diaria.create(diariaData);
+      await base44.entities.Diaria.create(diariaData);
       setShowDiariaModal(false);
       setFuncionarioDiaria(null);
       loadData();
@@ -307,7 +305,7 @@ export default function EquipePage() {
                     const dataTrabalho = new Date(d.data_trabalho);
                     const inicioMes = startOfMonth(new Date());
                     const fimMes = endOfMonth(new Date());
-                    
+
                     if (dataTrabalho >= inicioMes && dataTrabalho <= fimMes) {
                       return sum + (d.valor_pago || 0);
                     }
@@ -393,8 +391,8 @@ export default function EquipePage() {
             <Card className="p-12 text-center">
               <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {searchTerm || filterStatus !== 'all' 
-                  ? 'Nenhum funcionário encontrado' 
+                {searchTerm || filterStatus !== 'all'
+                  ? 'Nenhum funcionário encontrado'
                   : 'Nenhum funcionário cadastrado'
                 }
               </h3>
@@ -418,7 +416,7 @@ export default function EquipePage() {
         </TabsContent>
 
         <TabsContent value="diarias" className="space-y-6">
-          <RelatorioEquipe 
+          <RelatorioEquipe
             diarias={diarias}
             funcionarios={funcionarios}
             obras={obras}

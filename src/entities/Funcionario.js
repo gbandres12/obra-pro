@@ -26,6 +26,32 @@ export const Funcionario = {
         return data;
     },
 
+    get: async (id) => {
+        const { data, error } = await supabase
+            .from('funcionarios')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error) throw error;
+        return data;
+    },
+
+    filter: async (criteria = {}, orderBy = 'nome', limit = 100) => {
+        let orderColumn = orderBy;
+        let ascending = true;
+        if (orderBy.startsWith('-')) {
+            orderColumn = orderBy.substring(1);
+            ascending = false;
+        }
+        let query = supabase.from('funcionarios').select('*').order(orderColumn, { ascending }).limit(limit);
+        Object.entries(criteria).forEach(([key, value]) => {
+            query = query.eq(key, value);
+        });
+        const { data, error } = await query;
+        if (error) throw error;
+        return data;
+    },
+
     create: async (data) => {
         const { data: result, error } = await supabase
             .from('funcionarios')

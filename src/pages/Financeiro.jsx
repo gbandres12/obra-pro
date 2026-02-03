@@ -15,8 +15,10 @@ import {
 } from '@/components/ui/table';
 import {
   Plus,
-  AlertCircle
+  AlertCircle,
+  Lock
 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 import { format } from 'date-fns';
 import CriarLancamentoModal from '../components/financeiro/CriarLancamentoModal';
 
@@ -99,6 +101,7 @@ const FinanceiroObraCard = ({ obra, lancamentos }) => {
 };
 
 export default function FinanceiroPage() {
+  const { isMaster } = useAuth();
   const [obras, setObras] = useState([]);
   const [lancamentos, setLancamentos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,8 +109,28 @@ export default function FinanceiroPage() {
   const [obraFilter, setObraFilter] = useState('all');
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isMaster) {
+      loadData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [isMaster]);
+
+  if (!isMaster && !isLoading) {
+    return (
+      <Card className="m-6 p-12 text-center bg-gray-50 border-dashed">
+        <div className="flex flex-col items-center max-w-sm mx-auto">
+          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+            <Lock className="w-8 h-8 text-orange-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Restrito</h2>
+          <p className="text-gray-600 mb-6">
+            Apenas usuários com nível <strong>Master</strong> podem visualizar e gerenciar o financeiro das obras.
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   const loadData = async () => {
     setIsLoading(true);

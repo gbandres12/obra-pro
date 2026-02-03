@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Obra } from '@/entities/Obra';
-import { Etapa } from '@/entities/Etapa';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +26,7 @@ import TimelineEtapas from '../components/etapas/TimelineEtapas';
 
 const StatusIcon = ({ status }) => {
   const iconProps = { className: "w-5 h-5" };
-  
+
   switch (status) {
     case 'pendente':
       return <Circle {...iconProps} className="w-5 h-5 text-gray-400" />;
@@ -189,10 +188,10 @@ export default function EtapasPage() {
     setIsLoading(true);
     try {
       const [obrasData, etapasData] = await Promise.all([
-        Obra.list('-created_date'),
-        Etapa.list('-ordem')
+        base44.entities.Obra.list('-created_date'),
+        base44.entities.Etapa.list('-ordem')
       ]);
-      
+
       setObras(obrasData);
       setEtapas(etapasData);
     } catch (error) {
@@ -227,7 +226,7 @@ export default function EtapasPage() {
 
   const handleCreateEtapa = async (etapaData) => {
     try {
-      await Etapa.create(etapaData);
+      await base44.entities.Etapa.create(etapaData);
       setShowCreateModal(false);
       loadData();
     } catch (error) {
@@ -237,7 +236,7 @@ export default function EtapasPage() {
 
   const handleEditEtapa = async (etapaData) => {
     try {
-      await Etapa.update(editingEtapa.id, etapaData);
+      await base44.entities.Etapa.update(editingEtapa.id, etapaData);
       setEditingEtapa(null);
       loadData();
     } catch (error) {
@@ -254,8 +253,8 @@ export default function EtapasPage() {
       } else if (newStatus === 'em_andamento' && !etapa.data_inicio_real) {
         updateData.data_inicio_real = new Date().toISOString().split('T')[0];
       }
-      
-      await Etapa.update(etapa.id, updateData);
+
+      await base44.entities.Etapa.update(etapa.id, updateData);
       loadData();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -391,7 +390,7 @@ export default function EtapasPage() {
           </Card>
         )
       ) : (
-        <TimelineEtapas 
+        <TimelineEtapas
           etapas={filteredEtapas}
           obras={obras}
           isLoading={isLoading}

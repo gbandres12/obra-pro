@@ -10,19 +10,27 @@ import CriarTarefaModal from '../components/tarefas/CriarTarefaModal';
 
 const TarefaCard = ({ tarefa, obra, onEdit, onConcluir }) => {
   const isConcluida = tarefa.status === 'concluida';
+  const dataValida = tarefa.data_hora && !isNaN(new Date(tarefa.data_hora).getTime());
+
   return (
     <Card className={`transition-all duration-300 ${isConcluida ? 'bg-gray-50 opacity-70' : 'hover:shadow-md'}`}>
       <CardContent className="p-4 flex items-start gap-4">
-        <div className="flex flex-col items-center">
-          <div className="text-sm font-bold text-emerald-600">
-            {format(new Date(tarefa.data_hora), 'dd')}
-          </div>
-          <div className="text-xs text-gray-500 uppercase">
-            {format(new Date(tarefa.data_hora), 'MMM', { locale: ptBR })}
-          </div>
-          <div className="text-xs text-gray-500">
-            {format(new Date(tarefa.data_hora), 'HH:mm')}
-          </div>
+        <div className="flex flex-col items-center min-w-[60px]">
+          {dataValida ? (
+            <>
+              <div className="text-sm font-bold text-emerald-600">
+                {format(new Date(tarefa.data_hora), 'dd')}
+              </div>
+              <div className="text-xs text-gray-500 uppercase">
+                {format(new Date(tarefa.data_hora), 'MMM', { locale: ptBR })}
+              </div>
+              <div className="text-xs text-gray-500">
+                {format(new Date(tarefa.data_hora), 'HH:mm')}
+              </div>
+            </>
+          ) : (
+            <div className="text-xs text-gray-400 italic">S/ Data</div>
+          )}
         </div>
         <div className="flex-1">
           <h4 className={`font-semibold ${isConcluida && 'line-through'}`}>{tarefa.titulo}</h4>
@@ -53,12 +61,16 @@ export default function TarefasPage() {
 
   const loadData = async () => {
     setIsLoading(true);
-    const [obrasData, tarefasData] = await Promise.all([
-      base44.entities.Obra.list(),
-      base44.entities.TarefaEngenheiro.list('-data_hora')
-    ]);
-    setObras(obrasData);
-    setTarefas(tarefasData);
+    try {
+      const [obrasData, tarefasData] = await Promise.all([
+        base44.entities.Obra.list().catch(e => { console.error(e); return []; }),
+        base44.entities.TarefaEngenheiro.list('-data_hora').catch(e => { console.error(e); return []; })
+      ]);
+      setObras(Array.isArray(obrasData) ? obrasData : []);
+      setTarefas(Array.isArray(tarefasData) ? tarefasData : []);
+    } catch (error) {
+      console.error('Erro ao carregar tarefas:', error);
+    }
     setIsLoading(false);
   };
 
@@ -78,12 +90,14 @@ export default function TarefasPage() {
     loadData();
   };
 
-  const tarefasAgrupadas = tarefas.reduce((acc, tarefa) => {
-    const data = format(new Date(tarefa.data_hora), 'yyyy-MM-dd');
-    if (!acc[data]) {
-      acc[data] = [];
+  const tarefasAgrupadas = (tarefas || []).reduce((acc, tarefa) => {
+    const d = tarefa.data_hora ? new Date(tarefa.data_hora) : null;
+    if (!d || isNaN(d.getTime())) return acc;
+    const key = format(d, 'yyyy-MM-dd');
+    if (!acc[key]) {
+      acc[key] = [];
     }
-    acc[data].push(tarefa);
+    acc[key].push(tarefa);
     return acc;
   }, {});
 
@@ -95,7 +109,7 @@ export default function TarefasPage() {
           <Plus className="mr-2 h-4 w-4" /> Nova Tarefa
         </Button>
       </div>
-      
+
       {isLoading ? <p>Carregando...</p> : (
         <div className="space-y-6">
           {Object.entries(tarefasAgrupadas).map(([data, tarefasDoDia]) => (
@@ -105,9 +119,9 @@ export default function TarefasPage() {
               </h3>
               <div className="space-y-2">
                 {tarefasDoDia.map(tarefa => (
-                  <TarefaCard 
-                    key={tarefa.id} 
-                    tarefa={tarefa} 
+                  <TarefaCard
+                    key={tarefa.id}
+                    tarefa={tarefa}
                     obra={obras.find(o => o.id === tarefa.obra_id)}
                     onEdit={setEditingTarefa}
                     onConcluir={handleConcluir}

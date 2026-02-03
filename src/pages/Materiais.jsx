@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Obra } from '@/entities/Obra';
-import { SolicitacaoMaterial } from '@/entities/SolicitacaoMaterial';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -55,7 +54,7 @@ const MaterialCard = ({ solicitacao, obra, onUpdateStatus }) => {
   };
 
   // Verificar se está atrasado (mais de 48h para entregar)
-  const diasAtrasado = solicitacao.data_necessaria 
+  const diasAtrasado = solicitacao.data_necessaria
     ? differenceInDays(new Date(), new Date(solicitacao.data_necessaria))
     : 0;
   const isAtrasado = diasAtrasado > 0 && solicitacao.status !== 'entregue' && solicitacao.status !== 'cancelado';
@@ -176,10 +175,10 @@ export default function MateriaisPage() {
     setIsLoading(true);
     try {
       const [obrasData, solicitacoesData] = await Promise.all([
-        Obra.list('-created_date'),
-        SolicitacaoMaterial.list('-data_solicitacao')
+        base44.entities.Obra.list('-created_date'),
+        base44.entities.SolicitacaoMaterial.list('-data_solicitacao')
       ]);
-      
+
       setObras(obrasData);
       setSolicitacoes(solicitacoesData);
     } catch (error) {
@@ -214,7 +213,7 @@ export default function MateriaisPage() {
 
   const handleCreateSolicitacao = async (solicitacaoData) => {
     try {
-      await SolicitacaoMaterial.create(solicitacaoData);
+      await base44.entities.SolicitacaoMaterial.create(solicitacaoData);
       setShowCreateModal(false);
       loadData();
     } catch (error) {
@@ -224,7 +223,7 @@ export default function MateriaisPage() {
 
   const handleUpdateStatus = async (solicitacao, newStatus) => {
     try {
-      await SolicitacaoMaterial.update(solicitacao.id, { ...solicitacao, status: newStatus });
+      await base44.entities.SolicitacaoMaterial.update(solicitacao.id, { ...solicitacao, status: newStatus });
       loadData();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
@@ -337,8 +336,8 @@ export default function MateriaisPage() {
             <Card className="p-12 text-center">
               <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {searchTerm || selectedObra !== 'all' 
-                  ? 'Nenhuma solicitação encontrada' 
+                {searchTerm || selectedObra !== 'all'
+                  ? 'Nenhuma solicitação encontrada'
                   : 'Nenhuma solicitação de material'
                 }
               </h3>

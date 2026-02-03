@@ -10,7 +10,8 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
 
-  const [userSubscription, setUserSubscription] = useState({ plano: 'free', status: 'inactive' });
+  const [userSubscription, setUserSubscription] = useState({ plano: 'free', status: 'inactive', role: 'user' });
+  const [isMaster, setIsMaster] = useState(false);
 
   useEffect(() => {
     // Check active sessions and subscribe to auth changes
@@ -64,8 +65,13 @@ export const AuthProvider = ({ children }) => {
       } else if (data) {
         setUserSubscription({
           plano: data.plan_tier || 'free',
-          status: data.subscription_status || 'inactive'
+          status: data.subscription_status || 'inactive',
+          role: data.role || 'user'
         });
+        // Check if user is master (admin)
+        if (data.role === 'admin' || data.role === 'master' || data.plan_tier === 'enterprise') {
+          setIsMaster(true);
+        }
       }
     } catch (err) {
       console.error('Error in fetchUserSubscription:', err);
@@ -95,10 +101,10 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       isLoadingAuth,
       isLoadingPublicSettings: false, // Default to false as we don't have this logic yet
-      authError,
       login,
       logout,
-      navigateToLogin: () => window.location.href = '/login' // Simple redirect
+      isMaster,
+      navigateToLogin: () => window.location.href = '/Login' // Match the key in PAGES
     }}>
       {children}
     </AuthContext.Provider>

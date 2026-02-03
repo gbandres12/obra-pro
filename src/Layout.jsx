@@ -16,6 +16,8 @@ import {
   CalendarCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/AuthContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navigationItems = [
   {
@@ -70,8 +72,9 @@ export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const isObraDashboard = currentPageName === 'ObraDashboard';
+  const isLoginPage = currentPageName === 'Login';
 
-  if (isObraDashboard) {
+  if (isObraDashboard || isLoginPage) {
     return <main>{children}</main>
   }
 
@@ -127,19 +130,29 @@ export default function Layout({ children, currentPageName }) {
 
 // Extracted for reuse
 function SidebarContent({ location, setSidebarOpen, isDesktop = false }) {
+  const { isMaster } = useAuth();
+
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Engenheiro de Bolso</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Engenheiro</h2>
+              {isMaster && (
+                <span className="bg-orange-100 text-orange-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-orange-200 uppercase">
+                  Master
+                </span>
+              )}
+            </div>
             <p className="text-xs text-gray-500">Gestão de Obras</p>
           </div>
         </div>
+        <ThemeToggle />
         {!isDesktop && (
           <Button
             variant="ghost"

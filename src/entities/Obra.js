@@ -28,6 +28,38 @@ export const Obra = {
         return data;
     },
 
+    get: async (id) => {
+        const { data, error } = await supabase
+            .from('obras')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching obra:', error);
+            throw error;
+        }
+        return data;
+    },
+
+    filter: async (criteria = {}, orderBy = 'created_at', limit = 50) => {
+        let orderColumn = orderBy;
+        let ascending = true;
+        if (orderBy.startsWith('-')) {
+            orderColumn = orderBy.substring(1);
+            ascending = false;
+        }
+
+        let query = supabase.from('obras').select('*').order(orderColumn, { ascending }).limit(limit);
+        Object.entries(criteria).forEach(([key, value]) => {
+            query = query.eq(key, value);
+        });
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data;
+    },
+
     create: async (obraData) => {
         const { data, error } = await supabase
             .from('obras')

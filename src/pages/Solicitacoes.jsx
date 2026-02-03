@@ -33,7 +33,11 @@ const SolicitacaoCard = ({ solicitacao, obra, onUpdateStatus }) => {
         <p>{solicitacao.descricao}</p>
         <div className="text-sm text-gray-500 flex justify-between">
           <span>Solicitante: {solicitacao.solicitante}</span>
-          <span>Data: {format(new Date(solicitacao.data_solicitacao), 'dd/MM/yyyy')}</span>
+          <span>
+            Data: {solicitacao.data_solicitacao && !isNaN(new Date(solicitacao.data_solicitacao).getTime())
+              ? format(new Date(solicitacao.data_solicitacao), 'dd/MM/yyyy')
+              : 'S/ Data'}
+          </span>
         </div>
         <div className="flex justify-end">
           <Select value={solicitacao.status} onValueChange={(v) => onUpdateStatus(solicitacao, v)}>
@@ -61,13 +65,16 @@ export default function SolicitacoesPage() {
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
-    setIsLoading(true);
-    const [obrasData, solicitacoesData] = await Promise.all([
-      base44.entities.Obra.list(),
-      base44.entities.Solicitacao.list('-data_solicitacao')
-    ]);
-    setObras(obrasData);
-    setSolicitacoes(solicitacoesData);
+    try {
+      const [obrasData, solicitacoesData] = await Promise.all([
+        base44.entities.Obra.list().catch(e => { console.error(e); return []; }),
+        base44.entities.Solicitacao.list('-data_solicitacao').catch(e => { console.error(e); return []; })
+      ]);
+      setObras(Array.isArray(obrasData) ? obrasData : []);
+      setSolicitacoes(Array.isArray(solicitacoesData) ? solicitacoesData : []);
+    } catch (error) {
+      console.error('Erro ao carregar solicitações:', error);
+    }
     setIsLoading(false);
   };
 
@@ -81,7 +88,7 @@ export default function SolicitacoesPage() {
     await base44.entities.Solicitacao.update(solicitacao.id, { ...solicitacao, status });
     loadData();
   };
-  
+
   const filteredSolicitacoes = solicitacoes.filter(s => setorFilter === 'all' || s.setor === setorFilter);
 
   return (
@@ -92,7 +99,7 @@ export default function SolicitacoesPage() {
           <Plus className="mr-2 h-4 w-4" /> Nova Solicitação
         </Button>
       </div>
-      
+
       <div className="flex justify-end">
         <Select value={setorFilter} onValueChange={setSetorFilter}>
           <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
@@ -107,16 +114,16 @@ export default function SolicitacoesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? <p>Carregando...</p> : filteredSolicitacoes.map(s => (
-          <SolicitacaoCard 
-            key={s.id} 
-            solicitacao={s} 
+          <SolicitacaoCard
+            key={s.id}
+            solicitacao={s}
             obra={obras.find(o => o.id === s.obra_id)}
             onUpdateStatus={handleUpdateStatus}
           />
         ))}
       </div>
 
-      <CriarSolicitacaoModal 
+      <CriarSolicitacaoModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleSave}

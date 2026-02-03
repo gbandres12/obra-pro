@@ -26,6 +26,20 @@ export const SolicitacaoMaterial = {
         return data;
     },
 
+    get: async (id) => {
+        const { data, error } = await supabase
+            .from('solicitacoes_materiais')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching solicitacao:', error);
+            throw error;
+        }
+        return data;
+    },
+
     filter: async (criteria = {}, orderBy = 'created_at', limit = 50) => {
         let orderColumn = orderBy;
         let ascending = true;
